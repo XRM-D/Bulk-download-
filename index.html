@@ -6,304 +6,459 @@
 <title>Bulk Download Manager</title>
 <style>
 :root {
-  --bg: #0d0d12;
-  --s1: #16161e;
-  --s2: #1e1e28;
-  --s3: #252532;
-  --border: rgba(255,255,255,0.08);
-  --text: #ededf5;
-  --muted: #7777a0;
-  --accent: #7c6fff;
-  --green: #25d87a;
-  --amber: #f0a500;
-  --red: #f05858;
+  --bg: #0c0c10;
+  --card: #13131a;
+  --card2: #1a1a24;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.13);
+  --text: #eeeef5;
+  --muted: #6b6b90;
+  --purple: #7b6fff;
+  --green: #22d474;
+  --amber: #ffaa00;
+  --red: #ff5555;
+  --radius: 10px;
 }
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+body { background: var(--bg); color: var(--text); min-height: 100vh; }
 
-/* HEADER */
-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
-.logo{width:30px;height:30px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center}
-.logo svg{width:16px;height:16px;stroke:white;fill:none;stroke-width:2.5}
-header h1{font-size:15px;font-weight:600}
-#hdr-info{margin-left:auto;font-size:12px;color:var(--muted)}
-
-/* LAYOUT */
-main{max-width:620px;margin:0 auto;padding:1.25rem 1rem}
-
-/* INPUT SECTION */
-.card{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:1.1rem;margin-bottom:12px}
-.card-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px}
-textarea{width:100%;height:150px;background:var(--s2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:11px 13px;font-size:12.5px;font-family:'Cascadia Code',Consolas,monospace;resize:vertical;line-height:1.65}
-textarea:focus{outline:none;border-color:var(--accent)}
-textarea::placeholder{color:var(--muted)}
-.btn-row{display:flex;gap:8px;margin-top:10px;align-items:center;flex-wrap:wrap}
-button{padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:13.5px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:background .15s}
-button:hover{background:var(--s2)}
-button.primary{background:var(--accent);border-color:transparent;color:#fff}
-button.primary:hover{background:#6a5ee0}
-button:disabled{opacity:.35;cursor:not-allowed;pointer-events:none}
-.err{font-size:12px;color:var(--red);margin-top:5px;min-height:15px}
-
-/* STATS */
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
-.stat{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:.9rem;text-align:center}
-.stat-n{font-size:24px;font-weight:800;letter-spacing:-.02em}
-.stat-l{font-size:11px;color:var(--muted);margin-top:2px}
-#sv-done{color:var(--green)}
-#sv-left{color:var(--accent)}
-
-/* LINK LIST */
-#links-panel{display:none}
-.panel-header{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px}
-.links-scroll{display:flex;flex-direction:column;gap:6px;max-height:60vh;overflow-y:auto;padding-right:2px}
-.links-scroll::-webkit-scrollbar{width:3px}
-.links-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
-
-/* LINK ITEM */
-.link-item{
-  display:flex;align-items:center;gap:10px;
-  background:var(--s1);border:1px solid var(--border);
-  border-radius:10px;padding:10px 12px;
-  cursor:pointer;transition:border-color .15s,background .15s;
-  position:relative;
+/* ── HEADER ── */
+.hdr {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 20px; border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; background: var(--bg); z-index: 10;
 }
-.link-item:hover{background:var(--s2);border-color:rgba(124,111,255,.4)}
-.link-item.active{border-color:var(--accent);background:rgba(124,111,255,.08)}
-.link-item.done{border-color:rgba(37,216,122,.25);background:rgba(37,216,122,.05)}
-.link-item.downloading{border-color:var(--amber);background:rgba(240,165,0,.07)}
+.hdr-icon {
+  width: 32px; height: 32px; border-radius: 9px;
+  background: var(--purple); display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.hdr-icon svg { width: 17px; height: 17px; stroke: #fff; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.hdr h1 { font-size: 15px; font-weight: 600; }
+.hdr-badge {
+  margin-left: auto; background: var(--card2); border: 1px solid var(--border2);
+  border-radius: 20px; padding: 3px 10px; font-size: 12px; color: var(--muted);
+}
+
+/* ── MAIN ── */
+main { max-width: 640px; margin: 0 auto; padding: 20px 16px 40px; }
+
+/* ── INPUT CARD ── */
+.input-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 16px; margin-bottom: 16px;
+}
+.input-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: 10px; }
+textarea {
+  width: 100%; height: 160px;
+  background: var(--card2); color: var(--text);
+  border: 1px solid var(--border); border-radius: 8px;
+  padding: 12px 14px; font-size: 12.5px;
+  font-family: 'Cascadia Code', 'Consolas', monospace;
+  resize: vertical; line-height: 1.7; outline: none;
+  transition: border-color .2s;
+}
+textarea:focus { border-color: var(--purple); }
+textarea::placeholder { color: var(--muted); }
+.input-row { display: flex; gap: 8px; margin-top: 12px; align-items: center; flex-wrap: wrap; }
+.err { font-size: 12px; color: var(--red); margin-top: 6px; min-height: 14px; }
+.link-count { font-size: 12px; color: var(--muted); margin-left: auto; }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 18px; border-radius: 8px; font-size: 13.5px; font-weight: 500;
+  border: 1px solid var(--border2); background: transparent; color: var(--text);
+  cursor: pointer; transition: background .15s; white-space: nowrap;
+}
+.btn:hover { background: var(--card2); }
+.btn:disabled { opacity: .3; cursor: not-allowed; pointer-events: none; }
+.btn-primary { background: var(--purple); border-color: transparent; color: #fff; }
+.btn-primary:hover { background: #6a5ee0; }
+.btn-green { background: var(--green); border-color: transparent; color: #03200e; font-weight: 700; font-size: 13px; }
+.btn-green:hover { background: #1dba64; }
+
+/* ── STATS ── */
+.stats {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  margin-bottom: 16px; display: none;
+}
+.stat { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 10px; text-align: center; }
+.stat-n { font-size: 26px; font-weight: 800; letter-spacing: -.03em; }
+.stat-l { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.n-done { color: var(--green); }
+.n-left { color: var(--purple); }
+
+/* ── QUEUE PANEL ── */
+.queue-panel { display: none; }
+.queue-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: 10px; }
+
+/* ── LINK ITEM ── */
+.link-row {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 11px 13px;
+  margin-bottom: 7px; transition: border-color .2s, background .2s;
+  /* NO onclick on the row itself */
+}
 
 /* Number badge */
-.num{
-  min-width:28px;height:28px;border-radius:50%;
-  background:var(--s3);border:1px solid var(--border);
-  display:flex;align-items:center;justify-content:center;
-  font-size:11px;font-weight:700;color:var(--muted);flex-shrink:0;
-}
-.link-item.active .num{background:var(--accent);border-color:transparent;color:#fff}
-.link-item.done .num{background:var(--green);border-color:transparent;color:#0a2010}
-.link-item.downloading .num{background:var(--amber);border-color:transparent;color:#2a1800}
-
-.link-info{flex:1;min-width:0}
-.link-url{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.link-status{font-size:11px;font-weight:600;margin-top:2px}
-.link-item.active .link-status{color:var(--accent)}
-.link-item.done .link-status{color:var(--green)}
-.link-item.downloading .link-status{color:var(--amber)}
-.link-item:not(.active):not(.done):not(.downloading) .link-status{color:var(--muted)}
-
-/* Action button on item */
-.item-btn{
-  padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;
-  border:none;cursor:pointer;flex-shrink:0;white-space:nowrap;
-}
-.item-btn.dl{background:var(--green);color:#0a2010}
-.item-btn.dl:hover{background:#1fc068}
-.item-btn.open{background:var(--accent);color:#fff}
-.item-btn.open:hover{background:#6a5ee0}
-
-/* Countdown overlay on item */
-.item-countdown{
-  position:absolute;right:12px;top:50%;transform:translateY(-50%);
-  font-size:20px;font-weight:800;color:var(--accent);
-  min-width:30px;text-align:center;
+.lnum {
+  min-width: 30px; height: 30px; border-radius: 50%;
+  background: var(--card2); border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--muted); flex-shrink: 0;
+  transition: background .2s, color .2s;
 }
 
-/* Done banner */
-.done-banner{background:rgba(37,216,122,.1);border:1px solid rgba(37,216,122,.3);border-radius:12px;padding:1.25rem;text-align:center;margin-bottom:12px}
-.done-banner .big{font-size:18px;font-weight:700;color:var(--green)}
-.done-banner .sub{font-size:13px;color:var(--muted);margin-top:3px}
+.link-mid { flex: 1; min-width: 0; }
+.link-url {
+  font-size: 12px; color: var(--muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+.link-sub { font-size: 11px; font-weight: 600; }
 
-@media(max-width:420px){
-  .stats{grid-template-columns:repeat(3,1fr)}
-  .stat-n{font-size:20px}
+/* Action zone — the only clickable part */
+.link-action { flex-shrink: 0; }
+
+/* States */
+.link-row.state-idle {}
+.link-row.state-active { border-color: var(--purple); background: rgba(123,111,255,.07); }
+.link-row.state-active .lnum { background: var(--purple); border-color: transparent; color: #fff; }
+.link-row.state-active .link-sub { color: var(--purple); }
+
+.link-row.state-dl { border-color: var(--amber); background: rgba(255,170,0,.06); }
+.link-row.state-dl .lnum { background: var(--amber); border-color: transparent; color: #1a0e00; }
+.link-row.state-dl .link-sub { color: var(--amber); }
+
+.link-row.state-done { border-color: rgba(34,212,116,.2); background: rgba(34,212,116,.04); }
+.link-row.state-done .lnum { background: var(--green); border-color: transparent; color: #03200e; }
+.link-row.state-done .link-sub { color: var(--green); }
+
+/* Open button (on idle items) */
+.btn-open {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 7px 13px; border-radius: 7px; font-size: 12px; font-weight: 600;
+  border: 1px solid var(--border2); background: transparent; color: var(--text);
+  cursor: pointer; transition: background .15s, border-color .15s;
+  white-space: nowrap;
+}
+.btn-open:hover { background: var(--card2); border-color: var(--purple); color: var(--purple); }
+
+/* Download button */
+.btn-dl {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 7px 14px; border-radius: 7px; font-size: 12px; font-weight: 700;
+  border: none; background: var(--green); color: #03200e;
+  cursor: pointer; transition: background .15s; white-space: nowrap;
+}
+.btn-dl:hover { background: #1dba64; }
+
+/* Done tag */
+.done-tag {
+  font-size: 11px; font-weight: 700; color: var(--green);
+  background: rgba(34,212,116,.12); border-radius: 20px;
+  padding: 5px 10px; white-space: nowrap;
+}
+
+/* ── DONE BANNER ── */
+.done-banner {
+  background: rgba(34,212,116,.08); border: 1px solid rgba(34,212,116,.25);
+  border-radius: 14px; padding: 20px; text-align: center; margin-bottom: 16px;
+}
+.done-banner-title { font-size: 20px; font-weight: 800; color: var(--green); }
+.done-banner-sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+/* ── NEXT HINT ── */
+.next-hint {
+  font-size: 11px; color: var(--muted); text-align: center;
+  padding: 6px 0; min-height: 20px;
+}
+
+@media (max-width: 420px) {
+  .stat-n { font-size: 20px; }
+  .btn-open, .btn-dl { padding: 7px 10px; font-size: 11px; }
 }
 </style>
 </head>
 <body>
-<header>
-  <div class="logo">
+
+<header class="hdr">
+  <div class="hdr-icon">
     <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
   </div>
   <h1>Bulk Download Manager</h1>
-  <span id="hdr-info"></span>
+  <div class="hdr-badge" id="hdr-badge" style="display:none">0 links</div>
 </header>
 
 <main>
-  <!-- Input -->
-  <div class="card" id="input-card">
-    <div class="card-label">Links paste karo (ek line = ek link, max 150)</div>
-    <textarea id="links-input" placeholder="https://example.com/file1.zip&#10;https://example.com/file2.zip&#10;https://example.com/file3.zip"></textarea>
-    <div class="err" id="err-msg"></div>
-    <div class="btn-row">
-      <button class="primary" id="start-btn" onclick="startQueue()">▶ Start</button>
-      <button id="reset-btn" onclick="resetAll()" disabled>↺ Reset</button>
-      <span style="font-size:12px;color:var(--muted);margin-left:auto" id="count-lbl"></span>
+
+  <!-- INPUT -->
+  <div class="input-card" id="input-card">
+    <div class="input-label">Links paste karo — ek line, ek link (max 150)</div>
+    <textarea id="ta" placeholder="https://site.com/file1.zip&#10;https://site.com/file2.zip&#10;https://site.com/file3.zip&#10;..."></textarea>
+    <div class="err" id="err"></div>
+    <div class="input-row">
+      <button class="btn btn-primary" id="btn-start" onclick="startQueue()">▶ Start</button>
+      <button class="btn" id="btn-reset" onclick="resetAll()" disabled>↺ Reset</button>
+      <span class="link-count" id="cnt-lbl"></span>
     </div>
   </div>
 
-  <!-- Stats -->
-  <div class="stats" id="stats-row" style="display:none">
-    <div class="stat"><div class="stat-n" id="sv-total">0</div><div class="stat-l">Total</div></div>
-    <div class="stat"><div class="stat-n" id="sv-done">0</div><div class="stat-l">Done</div></div>
-    <div class="stat"><div class="stat-n" id="sv-left">0</div><div class="stat-l">Baaki</div></div>
+  <!-- STATS -->
+  <div class="stats" id="stats">
+    <div class="stat"><div class="stat-n" id="sv-t">0</div><div class="stat-l">Total</div></div>
+    <div class="stat"><div class="stat-n n-done" id="sv-d">0</div><div class="stat-l">Done</div></div>
+    <div class="stat"><div class="stat-n n-left" id="sv-l">0</div><div class="stat-l">Baaki</div></div>
   </div>
 
-  <!-- Done banner -->
+  <!-- DONE BANNER -->
   <div id="done-slot"></div>
 
-  <!-- Links panel -->
-  <div id="links-panel">
-    <div class="panel-header">Queue — kisi pe bhi click karke download karo</div>
-    <div class="links-scroll" id="links-list"></div>
+  <!-- QUEUE -->
+  <div class="queue-panel" id="queue-panel">
+    <div class="queue-label">Queue — kisi bhi link pe click karo</div>
+    <div id="queue-list"></div>
+    <div class="next-hint" id="next-hint"></div>
   </div>
+
 </main>
 
 <script>
-let links = [], done = new Set(), active = -1;
-let cdTimer = null, shiftTimer = null;
+let links = [];
+let doneSet = new Set();
+let activeIdx = -1;
+let shiftTimeout = null;
 
+/* ── HELPERS ── */
 const $ = id => document.getElementById(id);
 
-$('links-input').addEventListener('input', () => {
-  const n = parseLinks().length;
-  $('count-lbl').textContent = n ? n + ' links' : '';
-  $('err-msg').textContent = '';
-});
+function el(tag, attrs, ...children) {
+  const e = document.createElement(tag);
+  if (attrs) Object.entries(attrs).forEach(([k,v]) => {
+    if (k === 'className') e.className = v;
+    else if (k === 'textContent') e.textContent = v;
+    else if (k === 'style') e.style.cssText = v;
+    else e.setAttribute(k, v);
+  });
+  children.forEach(c => typeof c === 'string' ? e.appendChild(document.createTextNode(c)) : c && e.appendChild(c));
+  return e;
+}
 
 function parseLinks() {
-  return $('links-input').value.split('\n')
-    .map(l => l.trim()).filter(l => /^https?:\/\//i.test(l));
+  return $('ta').value.split('\n')
+    .map(l => l.trim())
+    .filter(l => /^https?:\/\//i.test(l));
 }
 
+/* ── INPUT LISTENER ── */
+$('ta').addEventListener('input', () => {
+  const n = parseLinks().length;
+  $('cnt-lbl').textContent = n ? n + ' links' : '';
+  $('err').textContent = '';
+});
+
+/* ── START ── */
 function startQueue() {
   const arr = parseLinks();
-  if (!arr.length) { $('err-msg').textContent = 'Koi valid link nahi mila.'; return; }
-  if (arr.length > 150) { $('err-msg').textContent = 'Max 150 links allowed.'; return; }
+  if (!arr.length) { $('err').textContent = 'Koi valid link nahi mila. http:// se shuru karo.'; return; }
+  if (arr.length > 150) { $('err').textContent = 'Max 150 links allowed (' + arr.length + ' diye).'; return; }
+
   links = arr;
-  $('start-btn').disabled = true;
-  $('reset-btn').disabled = false;
-  $('links-input').disabled = true;
-  $('stats-row').style.display = 'grid';
-  $('links-panel').style.display = 'block';
-  $('hdr-info').textContent = links.length + ' links';
+  $('btn-start').disabled = true;
+  $('btn-reset').disabled = false;
+  $('ta').disabled = true;
+  $('stats').style.display = 'grid';
+  $('queue-panel').style.display = 'block';
+  $('hdr-badge').style.display = '';
+  $('hdr-badge').textContent = links.length + ' links';
+
   updateStats();
-  buildList();
-  activateLink(0);
+  buildQueue();
+  // Auto open first
+  openLink(0);
 }
 
-function buildList() {
-  $('links-list').innerHTML = links.map((l, i) => `
-    <div class="link-item" id="li-${i}" onclick="onItemClick(${i})">
-      <div class="num" id="num-${i}">${i + 1}</div>
-      <div class="link-info">
-        <div class="link-url">${l}</div>
-        <div class="link-status" id="ls-${i}">Tap karke open karo</div>
-      </div>
-      <div id="ia-${i}"></div>
-    </div>
-  `).join('');
+/* ── BUILD QUEUE ── */
+function buildQueue() {
+  const list = $('queue-list');
+  list.innerHTML = '';
+  links.forEach((url, i) => {
+    list.appendChild(makeRow(i, url));
+  });
 }
 
-function updateStats() {
-  $('sv-total').textContent = links.length;
-  $('sv-done').textContent = done.size;
-  $('sv-left').textContent = links.length - done.size;
+function makeRow(i, url) {
+  // Number badge
+  const numBadge = el('div', { className: 'lnum', id: 'lnum-' + i }, String(i + 1));
+
+  // URL text
+  const urlDiv = el('div', { className: 'link-url', textContent: url });
+
+  // Status text
+  const sub = el('div', { className: 'link-sub', id: 'sub-' + i, textContent: 'Open karo' });
+
+  const mid = el('div', { className: 'link-mid' }, urlDiv, sub);
+
+  // Action zone
+  const action = el('div', { className: 'link-action', id: 'act-' + i });
+
+  // Open button — clicking this opens the link
+  const openBtn = el('button', { className: 'btn-open' }, '↗ Open');
+  openBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openLink(i);
+  });
+  action.appendChild(openBtn);
+
+  const row = el('div', { className: 'link-row state-idle', id: 'row-' + i });
+  row.appendChild(numBadge);
+  row.appendChild(mid);
+  row.appendChild(action);
+
+  return row;
 }
 
-// Called when user taps any link item
-function onItemClick(i) {
-  if (done.has(i)) return; // already done, ignore
-  activateLink(i);
-}
+/* ── OPEN LINK (show it as active, open tab) ── */
+function openLink(i) {
+  if (doneSet.has(i)) return;
 
-function activateLink(i) {
-  clearTimers();
-  // deactivate previous
-  if (active >= 0 && active !== i) {
-    const prev = $('li-' + active);
-    if (prev && !done.has(active)) {
-      prev.className = 'link-item';
-      $('ls-' + active).textContent = 'Tap karke open karo';
-      $('ia-' + active).innerHTML = '';
-    }
+  clearTimeout(shiftTimeout);
+  $('next-hint').textContent = '';
+
+  // Reset previously active (if not done)
+  if (activeIdx >= 0 && activeIdx !== i && !doneSet.has(activeIdx)) {
+    setRowState(activeIdx, 'idle');
   }
-  active = i;
-  const item = $('li-' + i);
-  item.className = 'link-item downloading';
 
-  // Open the link in new tab
-  try { window.open(links[i], '_blank', 'noopener'); } catch(e) {}
+  activeIdx = i;
+  setRowState(i, 'active');
 
-  // Instantly show download button
-  $('ls-' + i).textContent = 'Download karo:';
-  $('ia-' + i).innerHTML = `<button class="item-btn dl" onclick="doDownload(${i}, event)">⬇ Download</button>`;
+  // Open in new tab
+  try { window.open(links[i], '_blank', 'noopener,noreferrer'); } catch(e) {}
+
+  // Show download button immediately
+  setTimeout(() => {
+    if (activeIdx !== i || doneSet.has(i)) return;
+    setRowState(i, 'dl');
+  }, 300); // tiny delay so tab opens first
 }
 
-function doDownload(i, e) {
-  e && e.stopPropagation();
-  // trigger download
-  const a = document.createElement('a');
-  a.href = links[i]; a.download = ''; a.target = '_blank';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+/* ── SET ROW STATE ── */
+function setRowState(i, state) {
+  const row = $('row-' + i);
+  const act = $('act-' + i);
+  const sub = $('sub-' + i);
+  if (!row) return;
 
-  // mark done
-  done.add(i);
-  const item = $('li-' + i);
-  item.className = 'link-item done';
-  $('ls-' + i).textContent = 'Done ✓';
-  $('ia-' + i).innerHTML = '';
+  // Remove all state classes
+  row.className = 'link-row';
+
+  if (state === 'idle') {
+    row.classList.add('state-idle');
+    sub.textContent = 'Open karo';
+    act.innerHTML = '';
+    const openBtn = el('button', { className: 'btn-open' }, '↗ Open');
+    openBtn.addEventListener('click', (e) => { e.stopPropagation(); openLink(i); });
+    act.appendChild(openBtn);
+
+  } else if (state === 'active') {
+    row.classList.add('state-active');
+    sub.textContent = 'Tab mein khul raha hai...';
+    act.innerHTML = '';
+
+  } else if (state === 'dl') {
+    row.classList.add('state-dl');
+    sub.textContent = 'Download karo ↓';
+    act.innerHTML = '';
+    const dlBtn = el('button', { className: 'btn-dl' }, '⬇ Download');
+    dlBtn.addEventListener('click', (e) => { e.stopPropagation(); doDownload(i); });
+    act.appendChild(dlBtn);
+
+  } else if (state === 'done') {
+    row.classList.add('state-done');
+    sub.textContent = 'Done ✓';
+    act.innerHTML = '';
+    act.appendChild(el('span', { className: 'done-tag' }, '✓ Done'));
+  }
+}
+
+/* ── DOWNLOAD ── */
+function doDownload(i) {
+  if (doneSet.has(i)) return;
+
+  // Trigger download
+  const a = document.createElement('a');
+  a.href = links[i];
+  a.download = '';
+  a.target = '_blank';
+  a.rel = 'noopener';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  // Mark done
+  doneSet.add(i);
+  setRowState(i, 'done');
   updateStats();
 
-  // After 5 sec auto shift to next
+  // Find next undone link
   const next = findNext(i);
+
   if (next !== -1) {
-    $('ls-' + i).textContent = 'Done ✓ — 5 sec mein agla khulega';
-    shiftTimer = setTimeout(() => {
-      activateLink(next);
-      // scroll next into view
-      $('li-' + next)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    $('next-hint').textContent = '5 sec mein agla link khulega (' + (next + 1) + '/' + links.length + ')...';
+    shiftTimeout = setTimeout(() => {
+      $('next-hint').textContent = '';
+      openLink(next);
+      $('row-' + next)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }, 5000);
   } else {
-    // All done
-    showDone();
+    showAllDone();
   }
 }
 
 function findNext(from) {
   for (let i = from + 1; i < links.length; i++) {
-    if (!done.has(i)) return i;
+    if (!doneSet.has(i)) return i;
+  }
+  // wrap around — check before 'from' too
+  for (let i = 0; i < from; i++) {
+    if (!doneSet.has(i)) return i;
   }
   return -1;
 }
 
-function showDone() {
+function updateStats() {
+  $('sv-t').textContent = links.length;
+  $('sv-d').textContent = doneSet.size;
+  $('sv-l').textContent = links.length - doneSet.size;
+}
+
+function showAllDone() {
+  activeIdx = -1;
+  $('next-hint').textContent = '';
   $('done-slot').innerHTML = `
     <div class="done-banner">
-      <div class="big">🎉 Sab complete!</div>
-      <div class="sub">${links.length} links process ho gaye</div>
+      <div class="done-banner-title">🎉 Sab complete!</div>
+      <div class="done-banner-sub">${links.length} links process ho gaye</div>
     </div>`;
 }
 
-function clearTimers() {
-  clearInterval(cdTimer);
-  clearTimeout(shiftTimer);
-}
-
+/* ── RESET ── */
 function resetAll() {
-  clearTimers();
-  links = []; done = new Set(); active = -1;
-  $('links-input').disabled = false;
-  $('links-input').value = '';
-  $('start-btn').disabled = false;
-  $('reset-btn').disabled = true;
-  $('stats-row').style.display = 'none';
-  $('links-panel').style.display = 'none';
-  $('links-list').innerHTML = '';
-  $('count-lbl').textContent = '';
-  $('err-msg').textContent = '';
-  $('hdr-info').textContent = '';
+  clearTimeout(shiftTimeout);
+  links = []; doneSet = new Set(); activeIdx = -1;
+  $('ta').disabled = false; $('ta').value = '';
+  $('btn-start').disabled = false; $('btn-reset').disabled = true;
+  $('stats').style.display = 'none';
+  $('queue-panel').style.display = 'none';
+  $('queue-list').innerHTML = '';
+  $('cnt-lbl').textContent = ''; $('err').textContent = '';
+  $('hdr-badge').style.display = 'none';
   $('done-slot').innerHTML = '';
+  $('next-hint').textContent = '';
 }
 </script>
 </body>
