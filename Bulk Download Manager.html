@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bulk Download Manager</title>
+<style>
+  :root {
+    --bg: #0f0f13;
+    --surface: #18181f;
+    --surface2: #22222c;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #f0f0f4;
+    --muted: #8888a0;
+    --accent: #6c63ff;
+    --accent2: #9d96ff;
+    --green: #22c97a;
+    --amber: #f0a500;
+    --red: #f05858;
+    --radius: 10px;
+    color-scheme: dark;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; }
+
+  body { display: flex; flex-direction: column; min-height: 100vh; }
+
+  header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .logo {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--accent); display: flex; align-items: center; justify-content: center;
+  }
+  .logo svg { width: 18px; height: 18px; fill: white; }
+  header h1 { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+  header span { font-size: 12px; color: var(--muted); margin-left: auto; }
+
+  main { flex: 1; padding: 1.5rem; max-width: 680px; width: 100%; margin: 0 auto; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .card-title {
+    font-size: 13px; font-weight: 600; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .06em;
+    margin-bottom: 10px;
+  }
+
+  textarea {
+    width: 100%; height: 160px;
+    background: var(--surface2); color: var(--text);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 12px 14px; font-size: 13px; font-family: 'Cascadia Code', 'Consolas', monospace;
+    resize: vertical; line-height: 1.6;
+    transition: border-color .2s;
+  }
+  textarea:focus { outline: none; border-color: var(--accent); }
+  textarea::placeholder { color: var(--muted); }
+
+  .row { display: flex; gap: 10px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
+
+  button {
+    padding: 9px 18px; border-radius: var(--radius);
+    border: 1px solid var(--border2);
+    background: transparent; color: var(--text);
+    font-size: 14px; font-weight: 500; cursor: pointer;
+    transition: background .15s, border-color .15s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  button:hover { background: var(--surface2); }
+  button.primary {
+    background: var(--accent); border-color: transparent; color: #fff;
+  }
+  button.primary:hover { background: #5952d4; }
+  button:disabled { opacity: .4; cursor: not-allowed; pointer-events: none; }
+
+  .err { font-size: 12px; color: var(--red); margin-top: 6px; min-height: 16px; }
+  .link-count { font-size: 12px; color: var(--muted); margin-left: auto; }
+
+  /* Stats */
+  .stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 1rem; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; text-align: center; }
+  .stat-n { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+  .stat-l { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  #s-done .stat-n { color: var(--green); }
+  #s-left .stat-n { color: var(--accent2); }
+
+  /* Active panel */
+  #active-panel { display: none; }
+  .url-box {
+    background: var(--surface2); border-radius: var(--radius);
+    padding: 10px 14px; font-size: 12px; font-family: monospace;
+    color: var(--accent2); word-break: break-all; margin-bottom: 14px;
+    border: 1px solid var(--border);
+  }
+
+  .progress-track { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; width: 0; transition: width .3s linear; }
+
+  .timer-area { text-align: center; padding: 1.5rem 0 1rem; }
+  .timer-num { font-size: 48px; font-weight: 800; letter-spacing: -0.04em; color: var(--accent2); line-height: 1; }
+  .timer-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  #dl-btn {
+    display: none; width: 100%; margin-top: 12px;
+    background: var(--green); border: none; color: #0a2010;
+    padding: 14px; font-size: 16px; font-weight: 700;
+    border-radius: var(--radius); cursor: pointer;
+    animation: pulse 1.2s ease-in-out infinite;
+    justify-content: center;
+  }
+  #dl-btn:hover { background: #1ab06a; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.75} }
+
+  .next-hint { font-size: 12px; color: var(--muted); text-align: center; margin-top: 8px; min-height: 16px; }
+
+  /* Queue */
+  #queue-wrap { display: none; }
+  .queue-header { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 10px; }
+  .q-scroll { max-height: 240px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+  .q-scroll::-webkit-scrollbar { width: 4px; }
+  .q-scroll::-webkit-scrollbar-track { background: transparent; }
+  .q-scroll::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .q-item {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 9px 12px; font-size: 12px;
+  }
+  .q-item.is-active { border-color: var(--accent); }
+  .q-item.is-done { border-color: rgba(34,201,122,.25); }
+
+  .badge {
+    font-size: 10px; font-weight: 700; padding: 3px 8px;
+    border-radius: 20px; white-space: nowrap;
+    text-transform: uppercase; letter-spacing: .04em;
+  }
+  .b-pending { background: rgba(255,255,255,.07); color: var(--muted); }
+  .b-active  { background: rgba(108,99,255,.2); color: var(--accent2); }
+  .b-wait    { background: rgba(240,165,0,.18); color: var(--amber); }
+  .b-done    { background: rgba(34,201,122,.18); color: var(--green); }
+
+  .q-url { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color: var(--muted); }
+
+  /* Done banner */
+  .done-banner {
+    background: rgba(34,201,122,.1); border: 1px solid rgba(34,201,122,.3);
+    border-radius: 14px; padding: 1.5rem; text-align: center; margin-bottom: 1rem;
+  }
+  .done-banner .big { font-size: 20px; font-weight: 700; color: var(--green); margin-bottom: 4px; }
+  .done-banner .sub { font-size: 13px; color: var(--muted); }
+
+  @media (max-width: 480px) {
+    main { padding: 1rem; }
+    .timer-num { font-size: 36px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+  </div>
+  <h1>Bulk Download Manager</h1>
+  <span id="hdr-count"></span>
+</header>
+
+<main>
+
+  <!-- Input card -->
+  <div class="card" id="input-card">
+    <div class="card-title">Links paste karo</div>
+    <textarea id="links-input" placeholder="https://example.com/file1.zip&#10;https://example.com/file2.zip&#10;https://example.com/file3.zip&#10;&#10;Ek line mein ek link — max 150 links"></textarea>
+    <div class="err" id="err-msg"></div>
+    <div class="row">
+      <button class="primary" id="start-btn" onclick="startQueue()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Start queue
+      </button>
+      <button id="reset-btn" onclick="resetAll()" disabled>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        Reset
+      </button>
+      <span class="link-count" id="count-label"></span>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats" id="stats-row" style="display:none">
+    <div class="stat" id="s-total"><div class="stat-n" id="sv-total">0</div><div class="stat-l">Total</div></div>
+    <div class="stat" id="s-done"><div class="stat-n" id="sv-done">0</div><div class="stat-l">Done</div></div>
+    <div class="stat" id="s-left"><div class="stat-n" id="sv-left">0</div><div class="stat-l">Baaki</div></div>
+  </div>
+
+  <!-- Active panel -->
+  <div class="card" id="active-panel">
+    <div class="card-title">Ab chal raha hai</div>
+    <div class="url-box" id="active-url">—</div>
+    <div class="progress-track"><div class="progress-fill" id="prog-fill"></div></div>
+
+    <div class="timer-area" id="timer-area">
+      <div class="timer-num" id="timer-num">5</div>
+      <div class="timer-label">second mein download button aayega</div>
+    </div>
+
+    <button id="dl-btn" onclick="triggerDownload()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download karo!
+    </button>
+
+    <div class="next-hint" id="next-hint"></div>
+  </div>
+
+  <!-- Done banner placeholder -->
+  <div id="done-banner-slot"></div>
+
+  <!-- Queue -->
+  <div id="queue-wrap">
+    <div class="queue-header">Queue</div>
+    <div class="q-scroll" id="q-scroll"></div>
+  </div>
+
+</main>
+
+<script>
+let links = [], idx = 0, running = false;
+let countdown, progInterval, currentLink = '';
+
+const $ = id => document.getElementById(id);
+
+$('links-input').addEventListener('input', () => {
+  const arr = parseLinks();
+  $('count-label').textContent = arr.length ? arr.length + ' links' : '';
+  $('err-msg').textContent = '';
+  $('hdr-count').textContent = arr.length ? arr.length + ' links' : '';
+});
+
+function parseLinks() {
+  return $('links-input').value.split('\n')
+    .map(l => l.trim())
+    .filter(l => l.length > 0 && /^https?:\/\//i.test(l));
+}
+
+function startQueue() {
+  const arr = parseLinks();
+  if (!arr.length) { $('err-msg').textContent = 'Koi valid link nahi mila. http:// se shuru karo.'; return; }
+  if (arr.length > 150) { $('err-msg').textContent = 'Max 150 links allowed hain (' + arr.length + ' diye).'; return; }
+  links = arr; idx = 0; running = true;
+  $('start-btn').disabled = true;
+  $('reset-btn').disabled = false;
+  $('links-input').disabled = true;
+  $('stats-row').style.display = 'grid';
+  $('queue-wrap').style.display = 'block';
+  updateStats();
+  buildQueue();
+  processNext();
+}
+
+function buildQueue() {
+  $('q-scroll').innerHTML = links.map((l, i) =>
+    `<div class="q-item" id="qi-${i}">
+      <span class="badge b-pending" id="qb-${i}">Pending</span>
+      <span class="q-url">${l}</span>
+    </div>`
+  ).join('');
+}
+
+function updateStats() {
+  $('sv-total').textContent = links.length;
+  $('sv-done').textContent = idx;
+  $('sv-left').textContent = links.length - idx;
+}
+
+function processNext() {
+  if (idx >= links.length) { finishAll(); return; }
+  currentLink = links[idx];
+
+  $('active-panel').style.display = 'block';
+  $('active-url').textContent = currentLink;
+  $('dl-btn').style.display = 'none';
+  $('timer-area').style.display = 'block';
+  $('next-hint').textContent = '';
+  $('prog-fill').style.width = '0%';
+
+  const qb = $('qb-' + idx);
+  if (qb) { qb.className = 'badge b-active'; qb.textContent = 'Open ↗'; }
+  const qi = $('qi-' + idx);
+  if (qi) { qi.className = 'q-item is-active'; qi.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+
+  // open tab
+  try { window.open(currentLink, '_blank', 'noopener'); } catch(e) {}
+
+  // countdown
+  let sec = 5;
+  $('timer-num').textContent = sec;
+  clearInterval(countdown); clearInterval(progInterval);
+
+  let pct = 0;
+  progInterval = setInterval(() => {
+    pct = Math.min(100, pct + 100 / 50);
+    $('prog-fill').style.width = pct + '%';
+  }, 100);
+
+  countdown = setInterval(() => {
+    sec--;
+    $('timer-num').textContent = sec;
+    if (sec <= 0) {
+      clearInterval(countdown); clearInterval(progInterval);
+      $('prog-fill').style.width = '100%';
+      $('timer-area').style.display = 'none';
+
+      // mark waiting
+      const qb2 = $('qb-' + idx);
+      if (qb2) { qb2.className = 'badge b-wait'; qb2.textContent = 'Download?'; }
+
+      $('dl-btn').style.display = 'flex';
+      if (idx < links.length - 1) {
+        $('next-hint').textContent = 'Download ke baad agla link automatically khulega';
+      } else {
+        $('next-hint').textContent = 'Yeh aakhri link hai!';
+      }
+    }
+  }, 1000);
+}
+
+function triggerDownload() {
+  const a = document.createElement('a');
+  a.href = currentLink; a.download = ''; a.target = '_blank';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+
+  const qb = $('qb-' + idx);
+  if (qb) { qb.className = 'badge b-done'; qb.textContent = 'Done ✓'; }
+  const qi = $('qi-' + idx);
+  if (qi) qi.className = 'q-item is-done';
+
+  idx++;
+  updateStats();
+  $('dl-btn').style.display = 'none';
+
+  setTimeout(() => processNext(), 1200);
+}
+
+function finishAll() {
+  running = false;
+  $('active-panel').style.display = 'none';
+  $('done-banner-slot').innerHTML =
+    `<div class="done-banner">
+      <div class="big">✓ Sab complete!</div>
+      <div class="sub">${links.length} links process ho gaye</div>
+    </div>`;
+}
+
+function resetAll() {
+  clearInterval(countdown); clearInterval(progInterval);
+  links = []; idx = 0; running = false;
+  $('links-input').disabled = false;
+  $('links-input').value = '';
+  $('start-btn').disabled = false;
+  $('reset-btn').disabled = true;
+  $('stats-row').style.display = 'none';
+  $('active-panel').style.display = 'none';
+  $('queue-wrap').style.display = 'none';
+  $('q-scroll').innerHTML = '';
+  $('count-label').textContent = '';
+  $('err-msg').textContent = '';
+  $('hdr-count').textContent = '';
+  $('done-banner-slot').innerHTML = '';
+}
+</script>
+</body>
+</html>
