@@ -230,29 +230,14 @@ function activateLink(i) {
   }
   active = i;
   const item = $('li-' + i);
-  item.className = 'link-item active';
-  $('ia-' + i).innerHTML = '';
+  item.className = 'link-item downloading';
 
   // Open the link in new tab
   try { window.open(links[i], '_blank', 'noopener'); } catch(e) {}
 
-  // Show countdown 5 sec then show download button
-  let sec = 5;
-  $('ls-' + i).textContent = 'Tab mein khul raha hai...';
-  $('ia-' + i).innerHTML = `<div class="item-countdown" id="cd-${i}">${sec}</div>`;
-
-  cdTimer = setInterval(() => {
-    sec--;
-    const cd = $('cd-' + i);
-    if (cd) cd.textContent = sec;
-    if (sec <= 0) {
-      clearInterval(cdTimer);
-      // Show download button
-      item.className = 'link-item downloading';
-      $('ls-' + i).textContent = 'Download button tab mein hai — yahan bhi karo:';
-      $('ia-' + i).innerHTML = `<button class="item-btn dl" onclick="doDownload(${i}, event)">⬇ Download</button>`;
-    }
-  }, 1000);
+  // Instantly show download button
+  $('ls-' + i).textContent = 'Download karo:';
+  $('ia-' + i).innerHTML = `<button class="item-btn dl" onclick="doDownload(${i}, event)">⬇ Download</button>`;
 }
 
 function doDownload(i, e) {
