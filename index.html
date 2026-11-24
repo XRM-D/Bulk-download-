@@ -323,7 +323,6 @@ function makeRow(i, url) {
 
 /* ── OPEN LINK (show it as active, open tab) ── */
 function openLink(i) {
-  if (doneSet.has(i)) return;
 
   clearTimeout(shiftTimeout);
   $('next-hint').textContent = '';
@@ -379,15 +378,17 @@ function setRowState(i, state) {
 
   } else if (state === 'done') {
     row.classList.add('state-done');
-    sub.textContent = 'Done ✓';
+    sub.textContent = 'Done ✓ — phir download karo?';
     act.innerHTML = '';
-    act.appendChild(el('span', { className: 'done-tag' }, '✓ Done'));
+    const redlBtn = el('button', { className: 'btn-open' }, '↺ Phir');
+    redlBtn.style.cssText = 'border-color:rgba(34,212,116,.4);color:#22d474';
+    redlBtn.addEventListener('click', (e) => { e.stopPropagation(); openLink(i); });
+    act.appendChild(redlBtn);
   }
 }
 
 /* ── DOWNLOAD ── */
 function doDownload(i) {
-  if (doneSet.has(i)) return;
 
   // Trigger download
   const a = document.createElement('a');
